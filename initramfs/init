@@ -1,1 +1,56 @@
-#!/usr/bin/env bash
+#!/bin/busybox sh
+
+# Init file for initramfs-generator
+# Licensed under the GPL, version 3
+
+# TODO: write non-critical messages to a fifo that gets printed if,
+# and only if, the quiet kernel cmdline option is passed to the kernel.
+
+rescueshell() {
+    # Rescue shell if something goes wrong
+    # Usage: rescueshell [message]
+    echo $1
+    exec /bin/busybox sh
+}
+
+mount_fses() {
+    # procfs, lots of things need it, /proc/cmdline is a good example
+    mount --types proc /proc || rescueshell 'Dropping to shell (error when mounting /proc)'
+    # sysfs, just in case anything uses it
+    mount --types sysfs /sys
+    # this is why we need CONFIG_DEVTMPFS
+    mount --types devtmpfs /dev
+}
+mount_fses
+
+rescueshell_forced() {
+    # Rescue shell, not for rescue but if someone wants to drop to a shell
+    # Occurs just after everything needed for manual boot is mounted
+    echo 'rd.break was found on the kernel command line; dropping to a shell.'
+    echo 'procfs, sysfs and devtmpfs have been mounted, rootfs not mounted yet.'
+    echo 'You are init, try to not exit or kernel panic!'
+    # encourage the user :)
+    echo 'One last thing, you can do this! Don'\''t give up!'
+    /bin/busybox sh
+}
+
+grep /proc/cmdline rd.break && rescueshell_forced
+
+# how am i going to parse the cmdline?!?!?!?!?
+parse_cmdline() {
+    for param in $(cat /proc/cmdline); do # iterate though all the parameters
+        case $(cat /proc/cmdline) in
+
+            root=UUID=*) # it is a root uuid, not a partuuid
+                # Following line makes $ROOTUUID the one in /proc/cmdline
+                ROOTUUID=$(cat /proc/cmdline | awk -F '=' '{print $3}')
+                ROOT_TYPE=UUID;;
+
+            root=PARTUUID=*) # it is a partuuid
+                # Following line makes $PARTUUID the one in /proc/cmdline
+                PARTUUID=$(cat /proc/cmdline | awk -F '=' '{print $3}')
+                ROOT_TYPE=PARTUUID;;
+
+            root=/dev/{sd,hd,nvme,}
+        esac
+}
