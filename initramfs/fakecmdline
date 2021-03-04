@@ -1,0 +1,1 @@
+root=/dev/sda1 irrelevant splash something something_else init=foo rd.init="bar"
