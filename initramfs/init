@@ -1,5 +1,5 @@
-#!/bin/busybox sh
-
+#!/bin/busybox ash
+# shellcheck SHELL=ash
 # Init file for initramfs-generator
 # Licensed under the GPL, version 3
 
@@ -29,13 +29,13 @@ rescueshell_forced() {
     echo 'procfs, sysfs and devtmpfs have been mounted, rootfs not mounted yet.'
     echo 'You are init, try to not exit or kernel panic!'
     # encourage the user :)
+    # i want to be a wholesome init :)
     echo 'One last thing, you can do this! Don'\''t give up!'
     /bin/busybox sh
 }
 
 grep /proc/cmdline rd.break && rescueshell_forced
 
-# how am i going to parse the cmdline?!?!?!?!?
 parse_cmdline() {
     for param in $(cat /proc/cmdline); do # iterate though all the parameters
         case $param in
