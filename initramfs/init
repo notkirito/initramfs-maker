@@ -56,7 +56,7 @@ parse_cmdline() {
             # Following line makes root device var the one in /proc/cmdline
                 root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
                 export root
-                export root_type=devnode
+                export root_type=devnode;;
         esac
     done
 }
