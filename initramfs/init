@@ -3,6 +3,13 @@
 # Init file for initramfs-generator
 # Licensed under the GPL, version 3
 
+
+# Long-term exposure to this code may cause loss of sanity,
+# nightmares about your PC crashing of "Tried to kill init!", or any number of
+# other debilitating side effects. This code is known to the State of California
+# to cause cancer, birth defects, and reproductive harm.
+
+
 # TODO: write non-critical messages to a fifo that gets printed if,
 # and only if, the quiet kernel cmdline option is passed to the kernel.
 rescueshell() {
