@@ -41,6 +41,8 @@ rescueshell_forced() {
     /bin/busybox sh
 }
 
+# we check if we have an rd.break and if yes, we actually trigger
+# rescueshell_forced()
 grep /proc/cmdline rd.break && rescueshell_forced
 
 parse_cmdline() {
@@ -54,23 +56,26 @@ parse_cmdline() {
                 export root_type=UUID;;
 
             root=PARTUUID=*) # it is a partuuid
-                # Following line makes root device var the same in /proc/cmdline
+                # Following line makes root device var the same as in /proc/cmdline
                 root=$(cat /proc/cmdline | awk -F '=' '{print $3}')
                 export root
                 export root_type=PARTUUID;;
 
             root=/dev/sd*) # this sucks, but no brace expansion... :(
-            # Following line makes root device var the same in /proc/cmdline
+                # Following line makes root device var the same as in /proc/cmdline
                 root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
                 export root
                 export root_type=devnode;;
 
-            root=/dev/hd*)
+            root=/dev/hd*) # this really sucks
                 root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
                 export root
                 export root_type=devnode;;
 
-
+            root=/dev/nvme*) # nvme i think this should work
+                root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
+                export root
+                export root_type=devnode;;
         esac
     done
 }
