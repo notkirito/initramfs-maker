@@ -2,6 +2,7 @@
 A script that makes an initramfs, based on the files you give it
 
 NOTE: I am working on this. It might take a while.
+NOTE2: please give me a feature request im bored
 
 ## Dependencies/requirements:
 WIP, but definitely bash and probably awk.
