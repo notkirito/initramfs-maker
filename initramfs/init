@@ -76,6 +76,7 @@ parse_cmdline() {
                 root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
                 export root
                 export root_type=devnode;;
+            # TODO: lvm/encrypted root
         esac
     done
 }
