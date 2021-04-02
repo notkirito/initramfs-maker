@@ -2,6 +2,7 @@
 A script that makes an initramfs, based on the files you give it
 
 NOTE: I am working on this. It might take a while.
+
 NOTE2: please give me a feature request im bored
 
 ## Dependencies/requirements:
@@ -29,11 +30,11 @@ grub-mkconfig -o /boot/grub/grub.cfg # update grub config
 
 This should enable `devtmpfs`. Reboot after.
 
-Required programs: `ldd busybox` (space-seperated)
+Required programs: `ldd busybox` (space-seperated for readability by package managers)
 
 ## Usage:
 
-(WIP)
+See wiki
 
 
 
@@ -41,6 +42,6 @@ Required programs: `ldd busybox` (space-seperated)
 
 ## Installing
 
-(WIP)
+See wiki
 
-Copy `mkinitramfs.sh` somewhere writable by you.
+TL;DR: Copy `mkinitramfs.sh` somewhere writable by you.
