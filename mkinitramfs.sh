@@ -13,3 +13,7 @@ read_line() {
     printf "$1"
     cat /dev/stdin
 }
+
+parse_cli_args() {
+    
+}
