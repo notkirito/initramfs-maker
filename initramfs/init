@@ -10,8 +10,9 @@
 # to cause cancer, birth defects, and reproductive harm.
 
 
-# TODO: write non-critical messages to a fifo that gets printed if,
-# and only if, the quiet kernel cmdline option is passed to the kernel.
+# TODO: write non-critical/debug etc... messages to a fifo that gets printed if,
+# and only if, the quiet kernel cmdline option is not passed to the kernel.
+# TODO: trap ERR to rescue shell
 rescueshell() {
     # Rescue shell if something goes wrong
     # Usage: rescueshell [message]
@@ -30,19 +31,19 @@ mount_fses() {
 mount_fses
 
 rescueshell_forced() {
-    # Rescue shell, not for rescue but if someone wants to drop to a shell
+    # Rescue shell, not for real rescue but if someone wants to drop to a shell
     # Occurs just after everything needed for manual boot is mounted
     echo 'rd.break was found on the kernel command line; dropping to a shell.'
     echo 'procfs, sysfs and devtmpfs have been mounted, rootfs not mounted yet.'
     echo 'You are init, try to not exit or kernel panic!'
     # encourage the user :)
-    # i want to be a wholesome init :)
+    # wholesome inits are good hehe :)
     echo 'One last thing, you can do this! Don'\''t give up!'
-    /bin/busybox sh
+    exec /bin/busybox ash
 }
 
 # we check if we have an rd.break and if yes, we actually trigger
-# rescueshell_forced()
+# rescueshell_forced
 grep /proc/cmdline rd.break && rescueshell_forced
 
 parse_cmdline() {
@@ -51,32 +52,69 @@ parse_cmdline() {
 
             root=UUID=*) # it is a root uuid, not a partuuid
                 # Following line makes root device var the same in /proc/cmdline
-                root=$(cat /proc/cmdline | awk -F '=' '{print $3}')
+                root=$(echo "$param" | awk -F = '{print $3}') # get the UUID
                 export root
                 export root_type=UUID;;
 
             root=PARTUUID=*) # it is a partuuid
                 # Following line makes root device var the same as in /proc/cmdline
-                root=$(cat /proc/cmdline | awk -F '=' '{print $3}')
+                root=$(echo "$param" | awk -F = '{print $3}') # get the PARTUUID
                 export root
                 export root_type=PARTUUID;;
 
             root=/dev/sd*) # this sucks, but no brace expansion... :(
                 # Following line makes root device var the same as in /proc/cmdline
-                root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
+                root=$(echo "$param" | awk -F = '{print $2}') # get the path
                 export root
                 export root_type=devnode;;
 
             root=/dev/hd*) # this really sucks
-                root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
+                root=$(echo "$param" | awk -F = '{print $2}') # get the path
                 export root
                 export root_type=devnode;;
 
             root=/dev/nvme*) # nvme i think this should work
-                root=$(cat /proc/cmdline | awk -F '=' '{print $2}')
+                root=$(echo "$param" | awk -F = '{print $2}') # get the path
                 export root
                 export root_type=devnode;;
-            # TODO: lvm/encrypted root
+            # TODO: lvm/encrypted root, emmcblk (for more compatibility and should be easy), RAID omfg
+            # TODO: ssh with dropbear
+
+            # user defined init=something, we will boot it in another function
+            init=*)
+                init=$(echo "$param" | awk -F = '{print $2}') # get the path
+                export init # ofc
+                export user_defined_init=true # much simpler this way
         esac
     done
 }
+parse_cmdline
+
+mount_rootfs() {
+    # in case new_root is not there
+    mkdir --parents /new_root
+
+    case $root_type in
+
+        UUID)
+            mount UUID="$root" /new_root ;;
+
+        PARTUUID)
+            mount PARTUUID="$root" /new_root ;;
+
+        devnode)
+            mount "$root" /new_root ;; # this works because mount guesses the fs
+
+
+    esac
+}
+mount_rootfs
+
+exec_the_real_init() {
+    if [ $user_defined_init = "true" ]; then
+        exec switch_root /new_root "$init"
+    else
+        exec switch_root /new_root "/sbin/init"
+    fi
+}
+exec_the_real_init
