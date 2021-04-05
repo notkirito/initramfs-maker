@@ -11,6 +11,29 @@
 # To not die, please do not read past this point.
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # TODO: write non-critical/debug etc... messages to a fifo that gets printed if,
 # and only if, the quiet kernel cmdline option is not passed to the kernel.
 # TODO: trap ERR to rescue shell
@@ -48,6 +71,7 @@ rescueshell_forced() {
 grep /proc/cmdline rd.break && rescueshell_forced
 
 parse_cmdline() {
+    #shellcheck disable=SC2013 # we want to read words, not lines
     for param in $(cat /proc/cmdline); do # iterate though all the parameters
         case $param in
 
