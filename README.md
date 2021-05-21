@@ -9,7 +9,7 @@ WIP, but definitely bash and probably awk.
 
 To enable it,
 ```bash
-cd /usr/src/linux
+cd /path/to/linux/source
 make menuconfig
 ```
 
