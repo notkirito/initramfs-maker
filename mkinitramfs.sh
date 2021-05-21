@@ -62,6 +62,7 @@ parse_cli_args() {
 
                 --input-dir=*)
                     input_dir_path="$(echo "$current_argument" | awk -F = '{print $2}')"
+                    export input_dir_path
                 ;;
 
                 -i)
@@ -93,6 +94,8 @@ parse_cli_args() {
                         ;;
                         *)
                             usage
+                            # fix a bug, its obvious which one E-he
+                            exit 122
 
                     esac
         esac
@@ -100,16 +103,12 @@ parse_cli_args() {
     done
 }
 
-parse_cli_args "$@"
+parse_cli_args "$@" || exit 122
 
 calculate_dependencies() {
-    # LMAO using eval
-    parser=$(find "$input_dir_path" | while read -r line; do echo "ldd $line"; done)
     echo 'Calculating dependencies, this may take some time'
-    while read -r currentline; do
-        dependencies=$(echo "$currentline" | awk '{if ($1 ~ /\//) {print $1} else {print $3}}')
-        export dependencies
-    done < <(eval "$parser")
+    deps=$(find "$input_dir_path" -exec 'ldd {};')
+    export deps
 }
 
 calculate_dependencies
@@ -117,9 +116,10 @@ calculate_dependencies
 copy_dependencies() {
     echo 'Copying dependencies, this may take some time on HDDs'
     while read -r currentline; do
+        currentline=$(echo "$currentline" | awk '{if ($1 ~ /\//) {print $1} else {print $3}}')
         # shellcheck disable=SC2140 # we want to put a / after input_dir_path
         cp -n "$currentline" "$input_dir_path"/"$currentline"
-    done < <(echo "$dependencies")
+    done < <(echo "$deps")
 }
 
 copy_dependencies
@@ -127,7 +127,7 @@ copy_dependencies
 compress() {
     case $compression_type in
 
-        cpio)
+        cpio) # TODO: fix this
         echo "$input_dir_path/*" | cpio -cv > "$input_dir_path/initramfs.cpio"
         echo 'Initramfs created at'"$input_dir_path/initramfs.cpio."
         ;;
