@@ -3,15 +3,13 @@ A script that makes an initramfs, based on the files you give it
 
 NOTE: I am working on this. It might take a while.
 
-NOTE2: please give me a feature request im bored
-
 ## Dependencies/requirements:
 WIP, but definitely bash and probably awk.
 `devtmpfs` (CONFIG_DEVTMPFS) must be enabled (in the Linux kernel config) for the init to work, otherwise, kernel panic. (so is udev, so you probably have it compiled into your kernel anyways)
 
 To enable it,
 ```bash
-cd /usr/src/linux
+cd /path/to/linux/source
 make menuconfig
 ```
 
