@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # the actual script that makes the initramfs!
-# lots of copypasta
 
 # Long-term exposure to this code may cause loss of sanity,
 # nightmares about your PC crashing of "Tried to kill init!", or any number of
@@ -107,7 +106,7 @@ parse_cli_args "$@" || exit 122
 
 calculate_dependencies() {
     echo 'Calculating dependencies, this may take some time'
-    deps=$(find "$input_dir_path" -exec 'ldd {};')
+    deps=$(find "$input_dir_path" -exec "sh -c 'ldd {}'" \;)
     export deps
 }
 
